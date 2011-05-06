@@ -1,0 +1,6 @@
+.tags
+project/bin/
+project/gen/
+project/libs/
+project/obj/
+project/local.properties
