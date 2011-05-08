@@ -1,13 +1,15 @@
-This project shows how connect an Android phone to an Arduino with the
-Bluesmirf Bluetooth module. The demo can control an led and read a
-potentiometer. It should work with Android 2.0 (ecliar) and above.
+[About]
 
-The Bluesmirf Bluetooth module is available from Sparkfun.
+	This project shows how connect an Android phone to an Arduino with the
+	Bluesmirf Bluetooth module. The demo can control an led and read a
+	potentiometer. It should work with Android 2.0 (ecliar) and above.
 
-	http://www.sparkfun.com/products/582
-	http://www.sparkfun.com/products/10269
+	The Bluesmirf Bluetooth module is available from Sparkfun.
 
-Send questions or comments to Jeff Boody - jeffboody@gmail.com
+		http://www.sparkfun.com/products/582
+		http://www.sparkfun.com/products/10269
+
+	Send questions or comments to Jeff Boody - jeffboody@gmail.com
 
 [Installing Android SDK]
 
@@ -49,8 +51,12 @@ Send questions or comments to Jeff Boody - jeffboody@gmail.com
 
 [Clone Project]
 
+	# download the source with git
 	cd $SRC
-	git clone https://github.com/jeffboody/bluesmirf-demo.git
+	git clone git://github.com/jeffboody/bluesmirf-demo.git
+
+	# or download the source as a zip or tarball
+	https://github.com/jeffboody/bluesmirf-demo/archives/master
 
 	# configure the profile
 	cd bluesmirf-demo
