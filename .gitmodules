@@ -1,0 +1,3 @@
+[submodule "project/src/com/jeffboody/BlueSmirf"]
+	path = project/src/com/jeffboody/BlueSmirf
+	url = git@github.com:jeffboody/bluesmirf.git

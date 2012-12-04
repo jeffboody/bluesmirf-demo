@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Jeff Boody
+ * Copyright (c) 2011-2012 Jeff Boody
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -32,45 +32,36 @@ import android.util.Log;
 import android.os.Looper;
 import android.os.Handler;
 import android.os.Message;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.UUID;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
+import com.jeffboody.BlueSmirf.BlueSmirfSPP;
 
 public class BlueSmirfDemo extends Activity implements Runnable, Handler.Callback
 {
 	private static final String TAG = "BlueSmirfDemo";
 
-	// bluetooth code is based on this example
-	// http://groups.google.com/group/android-beginners/browse_thread/thread/322c99d3b907a9e9/e1e920fe50135738?pli=1
-
-	// well known SPP UUID
-	private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-
 	// menu constant(s)
 	private static final int MENU_TOGGLE_LED = 0;
 
-	// Bluetooth state
-	private boolean          mIsConnected      = false;
-	private BluetoothAdapter mBluetoothAdapter = null;
-	private BluetoothSocket  mBluetoothSocket  = null;
-	private String           mBluetoothAddress = null;
-	private OutputStream     mOutputStream     = null;
-	private InputStream      mInputStream      = null;
-
 	// app state
-	private boolean  mIsAppRunning = false;
-	private TextView mTextView;
-	private Handler  mHandler;
+	private BlueSmirfSPP mSPP;
+	private boolean      mIsAppRunning;
+	private TextView     mTextView;
+	private Handler      mHandler;
+	private String       mBluetoothAddress;
 
 	// Arduino state
-	private int mStateLED = 0;
-	private int mStatePOT = 0;
+	private int mStateLED;
+	private int mStatePOT;
+
+	public BlueSmirfDemo()
+	{
+		mIsAppRunning     = false;
+		mBluetoothAddress = null;
+		mSPP              = new BlueSmirfSPP();
+		mStateLED         = 0;
+		mStatePOT         = 0;
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -91,12 +82,11 @@ public class BlueSmirfDemo extends Activity implements Runnable, Handler.Callbac
 		{
 			BufferedReader buf = new BufferedReader(new FileReader("/sdcard/bluesmirf.cfg"));
 			mBluetoothAddress = buf.readLine();
-			mBluetoothAddress.toUpperCase();
 			buf.close();
 		}
 		catch(Exception e)
 		{
-			Log.e(TAG, "failed to read /sdcard/bluesmirf.cfg", e);
+			Log.e(TAG, "onResume: ", e);
 			mBluetoothAddress = null;
 		}
 
@@ -153,16 +143,16 @@ public class BlueSmirfDemo extends Activity implements Runnable, Handler.Callbac
 
 		while(mIsAppRunning)
 		{
-			if(mIsConnected)
+			if(mSPP.isConnected())
 			{
-				BTWrite(mStateLED);
-				BTFlush();
-				mStatePOT = BTRead();
-				mStatePOT |= BTRead() << 8;
+				mSPP.writeByte(mStateLED);
+				mSPP.flush();
+				mStatePOT = mSPP.readByte();
+				mStatePOT |= mSPP.readByte() << 8;
 			}
 			else
 			{
-				BTConnect();
+				mSPP.connect(mBluetoothAddress);
 			}
 			mHandler.sendEmptyMessage(0);
 
@@ -171,7 +161,7 @@ public class BlueSmirfDemo extends Activity implements Runnable, Handler.Callbac
 			catch(InterruptedException e) { Log.e(TAG, e.getMessage());}
 		}
 
-		BTDisconnect();
+		mSPP.disconnect();
 		mStateLED = 0;
 		mStatePOT = 0;
 	}
@@ -189,112 +179,8 @@ public class BlueSmirfDemo extends Activity implements Runnable, Handler.Callbac
 	private void UpdateUI()
 	{
 		mTextView.setText("Bluetooth mac address is " + mBluetoothAddress + "\n" +
-		                  "Bluetooth is " + (mIsConnected ? "connected" : "disconnected") + "\n" +
+		                  "Bluetooth is " + (mSPP.isConnected() ? "connected" : "disconnected") + "\n" +
 		                  "LED is " + (mStateLED == 1 ? "on" : "off") + "\n" +
 		                  "POT is " + mStatePOT);
-	}
-
-	/*
-	 * bluetooth helper functions
-	 */
-
-	private boolean BTConnect()
-	{
-		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-		if(mBluetoothAdapter == null)
-			return false;
-
-		if(mBluetoothAdapter.isEnabled() == false)
-			return false;
-
-		try
-		{
-			BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(mBluetoothAddress);
-			mBluetoothSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
-
-			// discovery is a heavyweight process so
-			// disable while making a connection
-			mBluetoothAdapter.cancelDiscovery();
-
-			mBluetoothSocket.connect();
-			mOutputStream = mBluetoothSocket.getOutputStream();
-			mInputStream = mBluetoothSocket.getInputStream();
-		}
-		catch (Exception e)
-		{
-			Log.e(TAG, "BTConnect", e);
-			BTDisconnect();
-			return false;
-		}
-
-		Log.i(TAG, "BTConnect");
-		mIsConnected = true;
-		return true;
-	}
-
-	private void BTDisconnect()
-	{
-		Log.i(TAG, "BTDisconnect");
-		BTClose();
-		mIsConnected = false;
-	}
-
-	private void BTWrite(int b)
-	{
-		try
-		{
-			mOutputStream.write(b);
-		}
-		catch (IOException e)
-		{
-			Log.e(TAG, "BTWrite" + e);
-			BTDisconnect();
-		}
-	}
-
-	private int BTRead()
-	{
-		int b = 0;
-		try
-		{
-			b = mInputStream.read();
-		}
-		catch (IOException e)
-		{
-			Log.e(TAG, "BTRead" + e);
-			BTDisconnect();
-		}
-		return b;
-	}
-
-	private void BTClose()
-	{
-		try { mOutputStream.close(); }
-		catch(Exception e) { Log.e(TAG, "BTClose" + e); }
-
-		try { mInputStream.close(); }
-		catch(Exception e) { Log.e(TAG, "BTClose" + e); }
-
-		try { mBluetoothSocket.close(); }
-		catch(Exception e) { Log.e(TAG, "BTClose" + e); }
-
-		mBluetoothSocket  = null;
-		mBluetoothAdapter = null;
-	}
-
-	private void BTFlush()
-	{
-		if (mOutputStream != null)
-		{
-			try
-			{
-				mOutputStream.flush();
-			}
-			catch (IOException e)
-			{
-				Log.e(TAG, "BTFlush" + e);
-				BTDisconnect();
-			}
-		}
 	}
 }
