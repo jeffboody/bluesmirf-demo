@@ -1,8 +1,14 @@
+# To create new project
+# android create project -t android-7 -p project -k com.jeffboody.BlueSmirfDemo -a BlueSmirfDemo
+#
+# To update project for new SDK
+# android update project -p project -t android-7
+
 # App
 export APP=BlueSmirfDemo
 
 # Update SDK to point to the Android SDK
-SDK=/home/jeffboody/android/android-sdk-linux_86
+SDK=/home/jeffboody/android/android-sdk
 
 #-- DON'T CHANGE BELOW LINE --
 
