@@ -149,6 +149,11 @@ public class BlueSmirfDemo extends Activity implements Runnable, Handler.Callbac
 				mSPP.flush();
 				mStatePOT = mSPP.readByte();
 				mStatePOT |= mSPP.readByte() << 8;
+
+				if(mSPP.isError())
+				{
+					mSPP.disconnect();
+				}
 			}
 			else
 			{
