@@ -1,17 +1,19 @@
-[About]
+About
+=====
 
-	This project shows how connect an Android phone to an Arduino with the
-	Bluesmirf Bluetooth module. The demo can control an led and read a
-	potentiometer. It should work with Android 2.0 (ecliar) and above.
+This project shows how connect an Android phone to an Arduino with the
+Bluesmirf Bluetooth module. The demo can control an led and read a
+potentiometer. It should work with Android 2.0 (ecliar) and above.
 
-	The Bluesmirf Bluetooth module is available from Sparkfun.
+The Bluesmirf Bluetooth module is available from Sparkfun.
 
-		https://www.sparkfun.com/products/10268 - Bluesmirf Gold
-		https://www.sparkfun.com/products/10269 - Bluesmirf Silver
+* <a href="https://www.sparkfun.com/products/10268">Bluesmirf Gold</a>
+* <a href="https://www.sparkfun.com/products/10269">Bluesmirf Silver</a>
 
-	Send questions or comments to Jeff Boody - jeffboody@gmail.com
+Send questions or comments to Jeff Boody - jeffboody@gmail.com
 
-[Installing Android SDK]
+Installing Android SDK
+======================
 
 	# download the SDK to $ANDROID
 	# i.e. ~/android
@@ -33,7 +35,8 @@
 
 	# Eclipse is not required
 
-[Installing Arduino Dev Kit]
+Installing Arduino Dev Kit
+==========================
 
 	# some Linux distributions install brltty which cause
 	# problems with Arduino
@@ -49,7 +52,8 @@
 	cd $ARDUINO
 	tar -xzf arduino-0021-2.tgz
 
-[Clone Project]
+Clone Project
+=============
 
 	# download the source with git
 	cd $SRC
@@ -66,7 +70,8 @@
 	vim profile
 	# edit SDK to point to $ANDROID
 
-[Building and installing the bluesmirf-demo]
+Building and installing the bluesmirf-demo
+==========================================
 
 	cd $SRC/bluesmirf-demo
 	source profile
@@ -77,7 +82,8 @@
 	./build-java.sh
 	./install.sh
 
-[Building and uploading the Arduino firmware]
+Building and uploading the Arduino firmware
+===========================================
 
 	# launch the Arduino IDE
 	cd $ARDUINO/arduino-0021
@@ -96,18 +102,21 @@
 	# use the upload icon to program the Arduino firmware
 	# if bluesmirf is connected then unplug one of the tx/rx wires first
 
-[Building the circuit]
+Building the circuit
+====================
 
-	# see circuit/circuit.pdf
+See circuit/circuit.pdf
 
-[Configuration Files]
+Configuration Files
+===================
 
 	# edit the bluesmirf.cfg file to contain your Bluetooth mac address
 	# (Bluetooth mac address is printed on the Bluesmirf chip)
 	vim bluesmirf.cfg
 	adb push bluesmirf.cfg /sdcard/bluesmirf.cfg
 
-[License]
+License
+=======
 
 	Copyright (c) 2011-2012 Jeff Boody
 
