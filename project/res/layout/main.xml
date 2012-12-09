@@ -1,13 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    >
-<TextView  
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:text="Hello World, BlueSmirfDemo"
-    />
-</LinearLayout>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
 
+	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	              android:orientation="vertical"
+	              android:layout_width="fill_parent"
+	              android:layout_height="wrap_content">
+
+		<TextView android:layout_width="fill_parent"
+		          android:layout_height="wrap_content"
+		          android:text="Configuration"/>
+
+		<Button android:layout_height="wrap_content"
+		        android:layout_width="wrap_content"
+		        android:text="Bluetooth Settings"
+		        android:onClick="onBluetoothSettings"/>
+
+		<TextView android:layout_width="fill_parent"
+		          android:layout_height="wrap_content"
+		          android:text="Paired device(s)"/>
+
+		<Spinner android:id="@+id/ID_PAIRED_DEVICES"
+		         android:layout_width="fill_parent"
+		         android:layout_height="wrap_content"/>
+
+		<TextView android:layout_width="fill_parent"
+		          android:layout_height="wrap_content"
+		          android:text="Link"/>
+
+		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		              android:orientation="horizontal"
+		              android:layout_width="fill_parent"
+		              android:layout_height="fill_parent">
+
+			<Button android:layout_height="wrap_content"
+			        android:layout_width="wrap_content"
+			        android:text="Connect"
+			        android:onClick="onConnectLink"/>
+
+			<Button android:layout_height="wrap_content"
+			        android:layout_width="wrap_content"
+			        android:text="Disconnect"
+			        android:onClick="onDisconnectLink"/>
+
+		</LinearLayout>
+
+		<TextView android:layout_width="fill_parent"
+		          android:layout_height="wrap_content"
+		          android:text="Control(s)"/>
+
+		<Button android:layout_height="wrap_content"
+		        android:layout_width="wrap_content"
+		        android:text="Toggle LED"
+		        android:onClick="onToggleLED"/>
+
+		<TextView android:layout_width="fill_parent"
+		          android:layout_height="wrap_content"
+		          android:text="Status"/>
+
+		<TextView android:id="@+id/ID_STATUS"
+		          android:layout_width="fill_parent"
+		          android:layout_height="wrap_content"
+		          android:text="Waiting for sync"/>
+
+	</LinearLayout>
+</ScrollView>

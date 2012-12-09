@@ -25,30 +25,38 @@ package com.jeffboody.BlueSmirfDemo;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Spinner;
 import android.widget.TextView;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.content.Intent;
 import android.util.Log;
 import android.os.Looper;
 import android.os.Handler;
 import android.os.Message;
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.util.Set;
+import java.util.ArrayList;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import com.jeffboody.BlueSmirf.BlueSmirfSPP;
 
-public class BlueSmirfDemo extends Activity implements Runnable, Handler.Callback
+public class BlueSmirfDemo extends Activity implements Runnable, Handler.Callback, OnItemSelectedListener
 {
 	private static final String TAG = "BlueSmirfDemo";
 
-	// menu constant(s)
-	private static final int MENU_TOGGLE_LED = 0;
-
 	// app state
-	private BlueSmirfSPP mSPP;
-	private boolean      mIsAppRunning;
-	private TextView     mTextView;
+	private BlueSmirfSPP      mSPP;
+	private boolean           mIsThreadRunning;
+	private String            mBluetoothAddress;
+	private ArrayList<String> mArrayListBluetoothAddress;
+
+	// UI
+	private TextView     mTextViewStatus;
+	private Spinner      mSpinnerDevices;
+	private ArrayAdapter mArrayAdapterDevices;
 	private Handler      mHandler;
-	private String       mBluetoothAddress;
 
 	// Arduino state
 	private int mStateLED;
@@ -56,20 +64,29 @@ public class BlueSmirfDemo extends Activity implements Runnable, Handler.Callbac
 
 	public BlueSmirfDemo()
 	{
-		mIsAppRunning     = false;
-		mBluetoothAddress = null;
-		mSPP              = new BlueSmirfSPP();
-		mStateLED         = 0;
-		mStatePOT         = 0;
+		mIsThreadRunning           = false;
+		mBluetoothAddress          = null;
+		mSPP                       = new BlueSmirfSPP();
+		mStateLED                  = 0;
+		mStatePOT                  = 0;
+		mArrayListBluetoothAddress = new ArrayList<String>();
 	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		mTextView = new TextView(this);
-		mHandler  = new Handler(this);
-		setContentView(mTextView);
+
+		// initialize UI
+		setContentView(R.layout.main);
+		mTextViewStatus         = (TextView) findViewById(R.id.ID_STATUS);
+		ArrayList<String> items = new ArrayList<String>();
+		mSpinnerDevices         = (Spinner) findViewById(R.id.ID_PAIRED_DEVICES);
+		mArrayAdapterDevices    = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, items);
+		mHandler                = new Handler(this);
+		mSpinnerDevices.setOnItemSelectedListener(this);
+		mArrayAdapterDevices.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		mSpinnerDevices.setAdapter(mArrayAdapterDevices);
 	}
 
 	@Override
@@ -77,28 +94,37 @@ public class BlueSmirfDemo extends Activity implements Runnable, Handler.Callbac
 	{
 		super.onResume();
 
-		// read the Bluetooth mac address
-		try
+		// update the paired device(s)
+		BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+		Set<BluetoothDevice> devices = adapter.getBondedDevices();
+		mArrayAdapterDevices.clear();
+		mArrayListBluetoothAddress.clear();
+		if(devices.size() > 0)
 		{
-			BufferedReader buf = new BufferedReader(new FileReader("/sdcard/bluesmirf.cfg"));
-			mBluetoothAddress = buf.readLine();
-			buf.close();
+			for(BluetoothDevice device : devices)
+			{
+				mArrayAdapterDevices.add(device.getName());
+				mArrayListBluetoothAddress.add(device.getAddress());
+			}
+
+			// request that the user selects a device
+			if(mBluetoothAddress == null)
+			{
+				mSpinnerDevices.performClick();
+			}
 		}
-		catch(Exception e)
+		else
 		{
-			Log.e(TAG, "onResume: ", e);
 			mBluetoothAddress = null;
 		}
 
 		UpdateUI();
-		Thread t = new Thread(this);
-		t.start();
 	}
 
 	@Override
 	protected void onPause()
 	{
-		mIsAppRunning = false;
+		mSPP.disconnect();
 		super.onPause();
 	}
 
@@ -109,27 +135,51 @@ public class BlueSmirfDemo extends Activity implements Runnable, Handler.Callbac
 	}
 
 	/*
-	 * menu to toggle LED
+	 * Spinner callback
 	 */
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu)
+	public void onItemSelected(AdapterView<?> parent, View view, int pos, long id)
 	{
-		menu.add(0, MENU_TOGGLE_LED, 0, "Toggle LED");
-		return true;
+		mBluetoothAddress = mArrayListBluetoothAddress.get(pos);
 	}
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item)
+	public void onNothingSelected(AdapterView<?> parent)
 	{
-		int id = item.getItemId();
-		if (id == MENU_TOGGLE_LED)
+		mBluetoothAddress = null;
+	}
+
+	/*
+	 * buttons
+	 */
+
+	public void onBluetoothSettings(View view)
+	{
+		Intent i = new Intent(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
+		startActivity(i);
+	}
+
+	public void onToggleLED(View view)
+	{
+		if(mSPP.isConnected())
 		{
 			mStateLED = 1 - mStateLED;
-			return true;
 		}
+	}
 
-		return false;
+	public void onConnectLink(View view)
+	{
+		if(mIsThreadRunning == false)
+		{
+			mIsThreadRunning = true;
+			UpdateUI();
+			Thread t = new Thread(this);
+			t.start();
+		}
+	}
+
+	public void onDisconnectLink(View view)
+	{
+		mSPP.disconnect();
 	}
 
 	/*
@@ -139,26 +189,19 @@ public class BlueSmirfDemo extends Activity implements Runnable, Handler.Callbac
 	public void run()
 	{
 		Looper.prepare();
-		mIsAppRunning = true;
-
-		while(mIsAppRunning)
+		mSPP.connect(mBluetoothAddress);
+		while(mSPP.isConnected())
 		{
-			if(mSPP.isConnected())
-			{
-				mSPP.writeByte(mStateLED);
-				mSPP.flush();
-				mStatePOT = mSPP.readByte();
-				mStatePOT |= mSPP.readByte() << 8;
+			mSPP.writeByte(mStateLED);
+			mSPP.flush();
+			mStatePOT = mSPP.readByte();
+			mStatePOT |= mSPP.readByte() << 8;
 
-				if(mSPP.isError())
-				{
-					mSPP.disconnect();
-				}
-			}
-			else
+			if(mSPP.isError())
 			{
-				mSPP.connect(mBluetoothAddress);
+				mSPP.disconnect();
 			}
+
 			mHandler.sendEmptyMessage(0);
 
 			// wait briefly before sending the next packet
@@ -166,9 +209,10 @@ public class BlueSmirfDemo extends Activity implements Runnable, Handler.Callbac
 			catch(InterruptedException e) { Log.e(TAG, e.getMessage());}
 		}
 
-		mSPP.disconnect();
-		mStateLED = 0;
-		mStatePOT = 0;
+		mStateLED        = 0;
+		mStatePOT        = 0;
+		mIsThreadRunning = false;
+		mHandler.sendEmptyMessage(0);
 	}
 
 	/*
@@ -177,15 +221,26 @@ public class BlueSmirfDemo extends Activity implements Runnable, Handler.Callbac
 
 	public boolean handleMessage (Message msg)
 	{
+		// received update request from Bluetooth IO thread
 		UpdateUI();
 		return true;
 	}
 
 	private void UpdateUI()
 	{
-		mTextView.setText("Bluetooth mac address is " + mBluetoothAddress + "\n" +
-		                  "Bluetooth is " + (mSPP.isConnected() ? "connected" : "disconnected") + "\n" +
-		                  "LED is " + (mStateLED == 1 ? "on" : "off") + "\n" +
-		                  "POT is " + mStatePOT);
+		if(mSPP.isConnected())
+		{
+			mTextViewStatus.setText("connected to " + mSPP.getBluetoothAddress() + "\n" +
+			                        "LED is " + (mStateLED == 1 ? "on" : "off") + "\n" +
+			                        "POT is " + mStatePOT);
+		}
+		else if(mIsThreadRunning)
+		{
+			mTextViewStatus.setText("connecting to " + mBluetoothAddress);
+		}
+		else
+		{
+			mTextViewStatus.setText("disconnected");
+		}
 	}
 }

@@ -107,14 +107,6 @@ Building the circuit
 
 See circuit/circuit.pdf
 
-Configuration Files
-===================
-
-	# edit the bluesmirf.cfg file to contain your Bluetooth mac address
-	# (Bluetooth mac address is printed on the Bluesmirf chip)
-	vim bluesmirf.cfg
-	adb push bluesmirf.cfg /sdcard/bluesmirf.cfg
-
 License
 =======
 
