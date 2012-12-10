@@ -105,7 +105,7 @@ Building and uploading the Arduino firmware
 Building the circuit
 ====================
 
-See circuit/circuit.pdf
+View circuit.fzz schematic with <a href="http://www.fritzing.org">Fritzing</a> software.
 
 License
 =======
