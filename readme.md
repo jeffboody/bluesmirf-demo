@@ -38,19 +38,19 @@ Installing Android SDK
 Installing Arduino Dev Kit
 ==========================
 
-	# some Linux distributions install brltty which cause
-	# problems with Arduino
-	# http://www.ladyada.net/learn/arduino/lesson0-lin.html
-	sudo apt-get remove brltty
-
-	# http://www.arduino.cc/en/Main/Software
-	# http://www.arduino.cc/playground/Learning/Linux
-	# java should be sun-java6-jre
-	java -version
-	sudo apt-get install gcc-avr
-	sudo apt-get install avr-libc
-	cd $ARDUINO
-	tar -xzf arduino-0021-2.tgz
+	# install Arduino
+	sudo apt-get install arduino
+	
+	# install ino command line toolkit
+	# https://github.com/amperka/ino
+	sudo apt-get install python-setuptools
+	sudo apt-get install python-configobj
+	sudo apt-get install python-jinja2
+	sudo apt-get install python-serial
+	cd $SRC
+	git clone git://github.com/amperka/ino.git
+	cd ino
+	sudo make install
 
 Clone Project
 =============
@@ -82,7 +82,7 @@ Building and installing the bluesmirf-demo
 	./build-java.sh
 	./install.sh
 
-Building and uploading the Arduino firmware
+Building and uploading firmware with Arduino GUI
 ===========================================
 
 	# launch the Arduino IDE
@@ -96,11 +96,29 @@ Building and uploading the Arduino firmware
 	# when Arduino is connected
 	/dev/ttyUSB0
 
-	# open $SRC/bluesmirf-demo/sketchbook/firmware/firmware.pde
+	# open firmware/src/sketch.ino
 	# compile using Sketch->Verify/Compile
 
 	# use the upload icon to program the Arduino firmware
 	# if bluesmirf is connected then unplug one of the tx/rx wires first
+
+Building and uploading firmware with command prompt
+==========================================
+
+	# building
+	cd firmware
+	./build.sh
+	
+	# upload over USB
+	./upload.sh
+	
+	# upload over Bluetooth with SPPMirror
+	# see https://github.com/jeffboody/spp-mirror
+	# 1) start the spp mirror app
+	# 2) connect to the Bluetooth spp device and ensure net is listening
+	# 3) press Arduino reset button
+	# 4) wait ~250ms then start upload
+	./upload-spp-mirror.sh
 
 Building the circuit
 ====================

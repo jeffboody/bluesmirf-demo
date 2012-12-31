@@ -4,3 +4,5 @@ project/gen/
 project/libs/
 project/obj/
 project/local.properties
+firmware/.build
+release
