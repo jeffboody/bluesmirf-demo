@@ -10,6 +10,10 @@ The Bluesmirf Bluetooth module is available from Sparkfun.
 * <a href="https://www.sparkfun.com/products/10268">Bluesmirf Gold</a>
 * <a href="https://www.sparkfun.com/products/10269">Bluesmirf Silver</a>
 
+The Mdfly Bluetooth module is also works (see the notes below).
+
+* <a href="http://www.mdfly.com/index.php?main_page=product_info&cPath=8_47&products_id=769">Mdfly Bluetooth</a>
+
 Send questions or comments to Jeff Boody - jeffboody@gmail.com
 
 Installing Android SDK
@@ -124,6 +128,32 @@ Building the circuit
 ====================
 
 View circuit.fzz schematic with <a href="http://www.fritzing.org">Fritzing</a> software.
+
+Mdfly Bluetooth Notes
+=====================
+
+The default baud rate is 9600 and must be changed to 115200.
+
+1. connect Mdfly and Arduino for programming (i.e. rx -> rx and tx -> tx)
+2. connect Arduino reset to ground to enable FTDI mode
+3. start Arduino serial monitor and set baud rate to 9600
+4. program the Mdfly module
+5. reconnect rx/tx for serial (i.e. rx -> tx and tx -> rx)
+6. disconnect Arduino reset from ground
+
+Commands
+--------
+
+	AT               # OK
+	AT+NAMEmdfly01   # OKname
+	AT+PIN1234       # OKpin
+	AT+BAUD8         # OKbaud
+
+References
+----------
+
+* http://mdfly.com/Download/Wireless/BT0417C_ATcommand.pdf
+* http://arduino.cc/forum/index.php?topic=59338.0
 
 License
 =======
